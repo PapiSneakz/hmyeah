@@ -1,0 +1,30 @@
+exchange:
+  name: 'coinbase'        # ccxt exchange name (use 'coinbase' not 'coinbasepro')
+  sandbox: true           # True = sandbox/testnet mode
+  rate_limit_ms: 250
+
+market:
+  symbols:                # List of trading pairs instead of one
+    - "BTC/USD"
+    - "ETH/USD"
+    - "SOL/USD"
+    - "ADA/USD"
+  timeframe: "1m"         # 1-minute candles
+
+strategy:
+  name: "sma_rsi"
+  params:
+    fast_sma: 20
+    slow_sma: 50
+    rsi_period: 14
+    rsi_buy_below: 35
+    rsi_sell_above: 65
+
+risk:
+  max_position_pct: 0.2   # max 20% of equity per position
+  stop_loss_pct: 0.02     # 2% stop loss
+
+paper:
+  poll_seconds: 60        # how often to fetch new data (seconds)
+  candles_history: 100    # number of historical candles to load
+  starting_equity: 10000  # starting balance in USD (or your base currency)
