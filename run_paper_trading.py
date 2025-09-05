@@ -1,24 +1,20 @@
-import copy
-from bot.config import load_config
-from bot.live import PaperTradingLoop
-
+import yaml
+import os
+from keep_alive import keep_alive   # 👈 add this
+from bot.live import TradingLoop    # 👈 make sure this matches your class name
 
 def main():
-    cfg = load_config("config.yaml")
+    # Start the Replit keep-alive server
+    keep_alive()
 
-    # If "symbols" is provided, loop through them
-    symbols = cfg["market"].get("symbols", [])
-    if symbols:
-        for symbol in symbols:
-            cfg_single = copy.deepcopy(cfg)   # ✅ preserve all nested sections
-            cfg_single["market"]["symbol"] = symbol
-            loop = PaperTradingLoop(cfg_single)
-            loop.run_forever()
-    else:
-        # fallback to single symbol
-        loop = PaperTradingLoop(cfg)
-        loop.run_forever()
+    # Load config
+    cfg_path = os.path.join(os.path.dirname(__file__), "config.yaml")
+    with open(cfg_path, "r") as f:
+        cfg = yaml.safe_load(f)
 
+    # Start trading loop
+    loop = TradingLoop(cfg)
+    loop.run()
 
 if __name__ == "__main__":
     main()
