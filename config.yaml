@@ -4,6 +4,7 @@ exchange:
   rate_limit_ms: 250
 
 market:
+  symbol: "BTC/USD"       # Primary trading pair
   symbols:                # List of trading pairs instead of one
     - "BTC/USD"
     - "ETH/USD"
@@ -23,6 +24,11 @@ strategy:
 risk:
   max_position_pct: 0.2   # max 20% of equity per position
   stop_loss_pct: 0.02     # 2% stop loss
+
+backtest:
+  starting_equity: 10000  # starting balance for backtest
+  fee_pct: 0.0005         # 0.05% trading fee
+  slippage_pct: 0.0002    # 0.02% slippage
 
 paper:
   poll_seconds: 60        # how often to fetch new data (seconds)

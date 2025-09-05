@@ -8,3 +8,14 @@ python-dotenv>=1.0.0
 ccxt>=4.3.79
 ta>=0.11.0
 schedule>=1.2.1
+flask>=2.3.0
+ccxt
+flask
+matplotlib
+numpy
+pandas
+pydantic
+python-dotenv
+PyYAML
+schedule
+ta
