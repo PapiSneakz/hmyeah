@@ -1,3 +1,3 @@
 equity=10000
 position=0.0
-last_price=110844.1
+last_price=110832.25
