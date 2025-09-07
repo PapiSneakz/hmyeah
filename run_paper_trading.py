@@ -1,7 +1,7 @@
 import yaml
 import os
-from keep_alive import keep_alive   # 👈 add this
-from bot.live import PaperTradingLoop    # 👈 make sure this matches your class name
+from keep_alive import keep_alive    # 👈 keeps Replit bot running 24/7
+from bot.live import TradingLoop      # 👈 updated class name
 
 def main():
     # Start the Replit keep-alive server
@@ -13,7 +13,7 @@ def main():
         cfg = yaml.safe_load(f)
 
     # Start trading loop
-    loop = PaperTradingLoop(cfg)
+    loop = TradingLoop(cfg)   # 👈 use the updated class name
     loop.run_forever()
 
 if __name__ == "__main__":

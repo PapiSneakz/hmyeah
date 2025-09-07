@@ -1,16 +1,20 @@
 exchange:
   name: 'coinbase'        # ccxt exchange name (use 'coinbase' not 'coinbasepro')
-  sandbox: true           # True = sandbox/testnet mode
+  mode: 'live'           # "paper" or "live"
+  sandbox: false           # True = sandbox/testnet mode, False = real money
   rate_limit_ms: 250
+  api_key: "organizations/ee5e6607-a33d-47f7-bd13-a27289a46cc9/apiKeys/1bdacbb3-2cea-4aa2-9802-bbdd6bfd9414"# <-- put your Coinbase API key here
+  secret: "-----BEGIN EC PRIVATE KEY-----\nMHcCAQEEIIrkjLwvWv6wo9UO//m2w1sOs/q6xFnf0uMbtumI9K7QoAoGCCqGSM49\nAwEHoUQDQgAEaGggzoWzCaodNAEFYd6hxpCp24EemgAkEEpuGRcxCU9u5gPXI2b3\nGh6dErZ07a1dbn9qqeC8pSBTd81r7T1QHg==\n-----END EC PRIVATE KEY-----\n"         # <-- put your Coinbase API secret here
+  password: "Fristie564!"            # <-- required for Coinbase Advanced Trade API
 
 market:
   symbol: "BTC/USD"       # Primary trading pair
-  symbols:                # List of trading pairs instead of one
+  symbols:                # Optional: multiple trading pairs
     - "BTC/USD"
     - "ETH/USD"
     - "SOL/USD"
     - "ADA/USD"
-  timeframe: "1m"         # 1-minute candles
+  timeframe: "1m"         # Candle interval
 
 strategy:
   name: "sma_rsi"
@@ -31,6 +35,6 @@ backtest:
   slippage_pct: 0.0002    # 0.02% slippage
 
 paper:
-  poll_seconds: 60        # how often to fetch new data (seconds)
-  candles_history: 100    # number of historical candles to load
-  starting_equity: 10000  # starting balance in USD (or your base currency)
+  poll_seconds: 60        # fetch new candle every 60 seconds
+  candles_history: 100    # number of past candles to use for signals
+  starting_equity: 10000  # balance for paper trading
