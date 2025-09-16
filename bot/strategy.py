@@ -2,6 +2,7 @@ from typing import Dict, Any
 import pandas as pd
 import ta
 
+
 class BaseStrategy:
     def __init__(self, params: Dict[str, Any]):
         self.params = params
@@ -12,12 +13,11 @@ class BaseStrategy:
 
 class SMARSI(BaseStrategy):
     def generate_signals(self, candles: pd.DataFrame) -> pd.Series:
-        # ⚡ More active defaults
-        fast = self.params.get('fast_sma', 10)      # was 20
-        slow = self.params.get('slow_sma', 30)      # was 50
+        fast = self.params.get('fast_sma', 10)      # short-term SMA
+        slow = self.params.get('slow_sma', 30)      # long-term SMA
         rsi_p = self.params.get('rsi_period', 14)
-        rsi_buy_below = self.params.get('rsi_buy_below', 45)   # was 35
-        rsi_sell_above = self.params.get('rsi_sell_above', 55) # was 65
+        rsi_buy_below = self.params.get('rsi_buy_below', 35)
+        rsi_sell_above = self.params.get('rsi_sell_above', 65)
 
         df = candles.copy()
         df['sma_fast'] = df['close'].rolling(fast).mean()
@@ -26,17 +26,26 @@ class SMARSI(BaseStrategy):
 
         signal = pd.Series(0, index=df.index)
 
+        # --- SMA crossovers ---
         cross_up = (df['sma_fast'] > df['sma_slow']) & (df['sma_fast'].shift(1) <= df['sma_slow'].shift(1))
         cross_down = (df['sma_fast'] < df['sma_slow']) & (df['sma_fast'].shift(1) >= df['sma_slow'].shift(1))
 
-        # ✅ Looser logic: if RSI OR SMA crossover is enough, fire a trade
-        signal[(cross_up) | (df['rsi'] < rsi_buy_below)] = 1
-        signal[(cross_down) | (df['rsi'] > rsi_sell_above)] = -1
+        # --- RSI filter ---
+        rsi_buy = df['rsi'] < rsi_buy_below
+        rsi_sell = df['rsi'] > rsi_sell_above
 
-        # Optional debug print
+        # ✅ Trade if EITHER SMA crossover OR RSI confirms
+        signal[cross_up | rsi_buy] = 1
+        signal[cross_down | rsi_sell] = -1
+
+        # Debug output
         if not signal[signal != 0].empty:
             last_idx = signal[signal != 0].index[-1]
-            print(f"SMARSI signal: {signal[last_idx]} at price {df['close'].iloc[-1]} (RSI={df['rsi'].iloc[-1]:.2f})")
+            print(
+                f"SMARSI signal: {signal[last_idx]} "
+                f"at price {df['close'].iloc[-1]} "
+                f"(RSI={df['rsi'].iloc[-1]:.2f})"
+            )
 
         return signal.fillna(0)
 
@@ -66,7 +75,11 @@ class ScalpingStrategy(BaseStrategy):
 
         if not signal[signal != 0].empty:
             last_idx = signal[signal != 0].index[-1]
-            print(f"Scalping signal: {signal[last_idx]} at price {df['close'].iloc[-1]} (RSI={df['rsi'].iloc[-1]:.2f})")
+            print(
+                f"Scalping signal: {signal[last_idx]} "
+                f"at price {df['close'].iloc[-1]} "
+                f"(RSI={df['rsi'].iloc[-1]:.2f})"
+            )
 
         return signal.fillna(0)
 

@@ -1,0 +1,3 @@
+python-bitvavo-api
+requests
+websocket-client

@@ -1,0 +1,8 @@
+{
+    "apiKey": "60f37e764cc265dd7271a4129d06ac6b7e36f4bf06f23a6d013b6bee18e42d03",
+    "apiSecret": "fbbc220802e471f46a4f1deb50f151fb036cd7226c01b918012ee29b691f2899d3a1e9aab327de8a42b030ee28aea37c6326c55056cf88a6fb8b1cf625174405",
+    "dry_run": false,
+    "default_market": "BTC-EUR",
+    "order_size_eur": 5.0,
+    "log_level": "INFO"
+}

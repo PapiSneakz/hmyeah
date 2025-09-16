@@ -1,40 +1,32 @@
-exchange:
-  name: 'coinbase'        # ccxt exchange name (use 'coinbase' not 'coinbasepro')
-  mode: 'live'           # "paper" or "live"
-  sandbox: false           # True = sandbox/testnet mode, False = real money
-  rate_limit_ms: 250
-  api_key: "organizations/ee5e6607-a33d-47f7-bd13-a27289a46cc9/apiKeys/1bdacbb3-2cea-4aa2-9802-bbdd6bfd9414"# <-- put your Coinbase API key here
-  secret: "-----BEGIN EC PRIVATE KEY-----\nMHcCAQEEIIrkjLwvWv6wo9UO//m2w1sOs/q6xFnf0uMbtumI9K7QoAoGCCqGSM49\nAwEHoUQDQgAEaGggzoWzCaodNAEFYd6hxpCp24EemgAkEEpuGRcxCU9u5gPXI2b3\nGh6dErZ07a1dbn9qqeC8pSBTd81r7T1QHg==\n-----END EC PRIVATE KEY-----\n"         # <-- put your Coinbase API secret here
-  password: "Fristie564!"            # <-- required for Coinbase Advanced Trade API
+coinbase:
+  api_key_env: "COINBASE_API_KEY"
+  api_secret_file_env: "COINBASE_API_SECRET_FILE"
+  base_url: "https://api.coinbase.com"
 
 market:
-  symbol: "BTC/USD"       # Primary trading pair
-  symbols:                # Optional: multiple trading pairs
-    - "BTC/USD"
-    - "ETH/USD"
-    - "SOL/USD"
-    - "ADA/USD"
-  timeframe: "1m"         # Candle interval
+  symbol: "BTC-USD"        # main trading pair
+  timeframe: "1h"          # default candle interval
 
 strategy:
-  name: "sma_rsi"
+  name: "sma_crossover"
   params:
-    fast_sma: 20
-    slow_sma: 50
-    rsi_period: 14
-    rsi_buy_below: 35
-    rsi_sell_above: 65
+    fast_sma: 10
+    slow_sma: 40
 
 risk:
-  max_position_pct: 0.2   # max 20% of equity per position
-  stop_loss_pct: 0.02     # 2% stop loss
-
-backtest:
-  starting_equity: 10000  # starting balance for backtest
-  fee_pct: 0.0005         # 0.05% trading fee
-  slippage_pct: 0.0002    # 0.02% slippage
+  max_position_pct: 0.2    # Max 20% of equity per trade
+  stop_loss_pct: 0.02      # 2% stop loss
 
 paper:
-  poll_seconds: 60        # fetch new candle every 60 seconds
-  candles_history: 100    # number of past candles to use for signals
-  starting_equity: 10000  # balance for paper trading
+  enabled: false           # true = simulate, false = live
+  starting_equity: 10000
+  fee_pct: 0.0005
+  slippage_pct: 0.0002
+  poll_seconds: 60
+
+pepperstone_mt5:
+  symbol: "BTCUSD"
+  lot: 0.001
+  login: 0
+  server: ""
+  terminal_path: ""
