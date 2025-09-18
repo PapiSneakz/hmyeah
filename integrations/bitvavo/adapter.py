@@ -89,6 +89,7 @@ class BitvavoAdapter:
         return self._signed_get(f"/{market}/openOrders")
 
     def create_order(self, market=None, side="buy", order_type="market", amount=0.0):
+        """Place a buy/sell order"""
         market = market or self.default_market
         if self.dry_run:
             print(f"[DRY RUN] {side.upper()} {amount} {market}")
@@ -99,10 +100,11 @@ class BitvavoAdapter:
                 "market": market
             }
 
-        endpoint = f"/{market}/orders"
+        endpoint = "/order"  # ✅ Correct endpoint
         data = {
+            "market": market,     # ✅ Put market in body
             "side": side,
-            "type": order_type,
+            "orderType": order_type,
             "amount": str(amount)
         }
         return self._signed_post(endpoint, data)
