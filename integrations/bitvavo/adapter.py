@@ -5,7 +5,6 @@ import hashlib
 import json
 import requests
 
-
 class BitvavoAdapter:
     BASE_URL = "https://api.bitvavo.com/v2"
 
@@ -16,22 +15,13 @@ class BitvavoAdapter:
         self.default_market = default_market
         self.order_size_eur = order_size_eur
 
-    # --------------------
-    # Signing helpers
-    # --------------------
     def _headers(self, method: str, endpoint: str, body=None):
         timestamp = str(int(time.time() * 1000))
 
-        # Body must be exactly JSON without spaces if present, otherwise ""
-        body_str = json.dumps(body, separators=(',', ':')) if body else ""
-
-        # Signature = timestamp + method + endpoint + body
+        body_str = json.dumps(body, separators=(",", ":")) if body else ""
         message = timestamp + method.upper() + endpoint + body_str
-        signature = hmac.new(
-            self.apiSecret,
-            message.encode("utf-8"),
-            hashlib.sha256
-        ).hexdigest()
+
+        signature = hmac.new(self.apiSecret, message.encode("utf-8"), hashlib.sha256).hexdigest()
 
         return {
             "Bitvavo-Access-Key": self.apiKey,
@@ -40,9 +30,6 @@ class BitvavoAdapter:
             "Content-Type": "application/json"
         }
 
-    # --------------------
-    # Signed requests
-    # --------------------
     def _signed_get(self, endpoint, params=None):
         url = self.BASE_URL + endpoint
         headers = self._headers("GET", endpoint)
@@ -57,27 +44,14 @@ class BitvavoAdapter:
         resp.raise_for_status()
         return resp.json()
 
-    # --------------------
     # Public endpoints
-    # --------------------
     def recent_candles(self, market=None, interval="1m", limit=200):
         market = market or self.default_market
         url = f"{self.BASE_URL}/{market}/candles"
         params = {"interval": interval, "limit": limit}
         resp = requests.get(url, params=params)
         resp.raise_for_status()
-        data = resp.json()
-        candles = []
-        for c in data:
-            candles.append({
-                "time": c[0],
-                "open": float(c[1]),
-                "high": float(c[2]),
-                "low": float(c[3]),
-                "close": float(c[4]),
-                "volume": float(c[5])
-            })
-        return candles
+        return resp.json()
 
     def get_latest_price(self, market=None):
         market = market or self.default_market
@@ -86,9 +60,7 @@ class BitvavoAdapter:
         resp.raise_for_status()
         return float(resp.json()["price"])
 
-    # --------------------
     # Authenticated endpoints
-    # --------------------
     def get_balance(self):
         if self.dry_run:
             return {self.default_market.split("-")[0]: {"available": 1.0, "inOrder": 0.0}}
