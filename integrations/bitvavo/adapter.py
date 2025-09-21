@@ -4,69 +4,56 @@ import hmac
 import hashlib
 import json
 import requests
-import socket
 
 
 class BitvavoAdapter:
     BASE_URL = "https://api.bitvavo.com/v2"
 
-    def __init__(self, api_key: str, api_secret: str, dry_run: bool = True, default_market: str = "BTC-EUR", order_size_eur: float = 5.0):
+    def __init__(self, api_key, api_secret, dry_run=True, default_market="BTC-EUR", order_size_eur=5.0):
         self.apiKey = api_key
         self.apiSecret = api_secret.encode("utf-8")
         self.dry_run = dry_run
         self.default_market = default_market
         self.order_size_eur = order_size_eur
-        # session that we force to IPv4 (so Bitvavo sees your whitelisted IPv4)
-        self.session = self._get_ipv4_session()
-
-    def _get_ipv4_session(self):
-        session = requests.Session()
-        original_getaddrinfo = socket.getaddrinfo
-
-        def getaddrinfo_ipv4(host, port, *args, **kwargs):
-            return [x for x in original_getaddrinfo(host, port, *args, **kwargs) if x[0] == socket.AF_INET]
-
-        # monkey-patch for current process (keeps it simple)
-        socket.getaddrinfo = getaddrinfo_ipv4
-        return session
 
     # --------------------
     # Signing helpers
     # --------------------
-    def _headers(self, method: str, endpoint: str, body_str: str = "") -> dict:
-        """
-        Build the Bitvavo authentication headers. `endpoint` must be the path (e.g. '/balance' or '/order').
-        body_str must be the exact JSON string that will be sent (or empty string for GET).
-        """
+    def _headers(self, method: str, endpoint: str, body=None):
         timestamp = str(int(time.time() * 1000))
+
+        # Body must be exactly JSON without spaces if present, otherwise ""
+        body_str = json.dumps(body, separators=(',', ':')) if body else ""
+
+        # Signature = timestamp + method + endpoint + body
         message = timestamp + method.upper() + endpoint + body_str
-        signature = hmac.new(self.apiSecret, message.encode("utf-8"), hashlib.sha256).hexdigest()
+        signature = hmac.new(
+            self.apiSecret,
+            message.encode("utf-8"),
+            hashlib.sha256
+        ).hexdigest()
+
         return {
             "Bitvavo-Access-Key": self.apiKey,
             "Bitvavo-Access-Signature": signature,
             "Bitvavo-Access-Timestamp": timestamp,
-            "Content-Type": "application/json",
+            "Content-Type": "application/json"
         }
 
     # --------------------
     # Signed requests
     # --------------------
-    def _signed_get(self, endpoint: str, params=None):
+    def _signed_get(self, endpoint, params=None):
         url = self.BASE_URL + endpoint
-        headers = self._headers("GET", endpoint, "")
-        resp = self.session.get(url, headers=headers, params=params, timeout=15)
+        headers = self._headers("GET", endpoint)
+        resp = requests.get(url, headers=headers, params=params)
         resp.raise_for_status()
         return resp.json()
 
-    def _signed_post(self, endpoint: str, data=None):
-        """
-        IMPORTANT: we serialize the body once with compact separators, sign that exact string,
-        AND send that string as the request body (data=body_str) to avoid signature mismatches.
-        """
+    def _signed_post(self, endpoint, data=None):
         url = self.BASE_URL + endpoint
-        body_str = json.dumps(data, separators=(",", ":")) if data else ""
-        headers = self._headers("POST", endpoint, body_str)
-        resp = self.session.post(url, headers=headers, data=body_str, timeout=15)
+        headers = self._headers("POST", endpoint, data)
+        resp = requests.post(url, headers=headers, json=data)
         resp.raise_for_status()
         return resp.json()
 
@@ -77,7 +64,7 @@ class BitvavoAdapter:
         market = market or self.default_market
         url = f"{self.BASE_URL}/{market}/candles"
         params = {"interval": interval, "limit": limit}
-        resp = self.session.get(url, params=params, timeout=15)
+        resp = requests.get(url, params=params)
         resp.raise_for_status()
         data = resp.json()
         candles = []
@@ -88,14 +75,14 @@ class BitvavoAdapter:
                 "high": float(c[2]),
                 "low": float(c[3]),
                 "close": float(c[4]),
-                "volume": float(c[5]),
+                "volume": float(c[5])
             })
         return candles
 
     def get_latest_price(self, market=None):
         market = market or self.default_market
         url = f"{self.BASE_URL}/{market}/ticker/price"
-        resp = self.session.get(url, timeout=15)
+        resp = requests.get(url)
         resp.raise_for_status()
         return float(resp.json()["price"])
 
@@ -104,8 +91,7 @@ class BitvavoAdapter:
     # --------------------
     def get_balance(self):
         if self.dry_run:
-            # return a fake structure similar to live
-            return [{"symbol": self.default_market.split("-")[1], "available": "1.00", "inOrder": "0"}]
+            return {self.default_market.split("-")[0]: {"available": 1.0, "inOrder": 0.0}}
         return self._signed_get("/balance")
 
     def get_open_orders(self, market=None):
